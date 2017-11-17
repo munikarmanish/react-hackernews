@@ -14,6 +14,7 @@ class CreateLink extends React.Component {
     await this.props.createLinkMutation({
       variables: { description, url }
     });
+    this.props.history.push(`/`);
   }
 
   render() {
