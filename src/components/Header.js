@@ -4,6 +4,13 @@ import { Link } from 'react-router-dom';
 import { GC_USER_ID, GC_AUTH_TOKEN } from '../constants';
 
 class Header extends React.Component {
+  _logout() {
+    console.log('Logging out...');
+    localStorage.removeItem(GC_USER_ID);
+    localStorage.removeItem(GC_AUTH_TOKEN);
+    this.props.history.push(`/new/1`);
+  }
+
   render() {
     const userId = localStorage.getItem(GC_USER_ID);
 
@@ -21,11 +28,7 @@ class Header extends React.Component {
           <div className="flex flex-fixed">
             {userId
             ?
-              <div className='ml1 pointer black' onClick={() => {
-                localStorage.removeItem(GC_USER_ID)
-                localStorage.removeItem(GC_AUTH_TOKEN)
-                this.props.history.push(`/new/1`)
-              }}>logout</div>
+              <div className='ml1 pointer black' onClick={this._logout.bind(this)}>logout</div>
             :
               <Link to='/login' className='ml1 no-underline black'>login</Link>
             }

@@ -1,4 +1,6 @@
 import React from 'react';
+import { graphql, compose } from 'react-apollo';
+import gql from 'graphql-tag';
 import { GC_USER_ID, GC_AUTH_TOKEN } from '../constants';
 
 class Login extends React.Component {
@@ -16,7 +18,27 @@ class Login extends React.Component {
   }
 
   _confirm = async () => {
-    // ... TODO
+    const { name, email, password } = this.state;
+
+    if (this.state.login) {
+      console.log('Authenticating user...');
+      const result = await this.props.authenticateUserMutation({
+        variables: { email, password }
+      });
+      const { id, token } = result.data.authenticateUser;
+      this._saveUserData(id, token);
+    }
+
+    else {
+      console.log('Creating user...');
+      const result = await this.props.signupUserMutation({
+        variables: { email, password, name }
+      });
+      const { id, token } = result.data.signupUser;
+      this._saveUserData(id, token);
+    }
+
+    this.props.history.push(`/`);
   }
 
   render() {
@@ -52,7 +74,7 @@ class Login extends React.Component {
         <div className="flex mt3">
           <div
             className="pointer mr2 button"
-            onClick={() => this._confirm()}
+            onClick={this._confirm.bind(this)}
           >
             {this.state.login ? 'login' : 'create account' }
           </div>
@@ -68,4 +90,25 @@ class Login extends React.Component {
   }
 }
 
-export default Login;
+const SIGNUP_USER_MUTATION = gql`
+  mutation SignupUserMutation($email: String!, $password: String!, $name: String!) {
+    signupUser(email: $email, password: $password, name: $name) {
+      id
+      token
+    }
+  }
+`;
+
+const AUTHENTICATE_USER_MUTATION = gql`
+  mutation AuthenticateUserMutation($email: String!, $password: String!) {
+    authenticateUser(email: $email, password: $password) {
+      token
+      id
+    }
+  }
+`;
+
+export default compose(
+  graphql(SIGNUP_USER_MUTATION, { name: 'signupUserMutation' }),
+  graphql(AUTHENTICATE_USER_MUTATION, { name: 'authenticateUserMutation' }),
+)(Login);
